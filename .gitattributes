@@ -1,0 +1,27 @@
+# Normalize line endings so the project builds the same on any machine.
+* text=auto
+
+# Windows scripts must stay CRLF (cmd.exe / PowerShell are picky).
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# Unix shell scripts must stay LF.
+*.sh    text eol=lf
+
+# Source / config: LF is fine and consistent across platforms.
+*.c     text eol=lf
+*.h     text eol=lf
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+
+# Treat these as binary (never diff or convert).
+*.png   binary
+*.jpg   binary
+*.ico   binary
+*.db    binary

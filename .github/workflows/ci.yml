@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # --------------------------------------------------------------------
+  # Build the FreeRTOS C simulator with the MSVC Windows port.
+  # --------------------------------------------------------------------
+  build-rtos:
+    name: Build C simulator (MSVC)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch pinned FreeRTOS kernel
+        run: git clone --depth 1 --branch V10.5.1 https://github.com/FreeRTOS/FreeRTOS-Kernel.git FreeRTOS-Kernel
+
+      - name: Set up MSVC developer environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure (CMake + Ninja)
+        run: cmake --preset x64-release
+
+      - name: Build
+        run: cmake --build out/build/x64-release
+
+      - name: Verify executable
+        shell: pwsh
+        run: |
+          $exe = "out/build/x64-release/WatchCore_RTOS.exe"
+          if (-not (Test-Path $exe)) { throw "WatchCore_RTOS.exe was not produced" }
+          Write-Host "Built $exe"
+
+  # --------------------------------------------------------------------
+  # Type-check / build the Node orchestrator and React dashboard.
+  # --------------------------------------------------------------------
+  build-web:
+    name: Build web (backend + frontend)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Backend - install and type-check
+        working-directory: web/backend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Frontend - install and build
+        working-directory: web/frontend
+        run: |
+          npm ci
+          npm run build

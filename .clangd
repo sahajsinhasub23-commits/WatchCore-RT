@@ -1,0 +1,7 @@
+CompileFlags:
+  Add: [
+    "-Iinclude",
+    "-IFreeRTOS-Kernel/include",
+    "-IFreeRTOS-Kernel/portable/MSVC-MingW",
+    "-std=c99"
+  ]
